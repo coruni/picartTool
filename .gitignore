@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Build directories
+build/
+dist/
+*.egg-info/
+*.egg/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+processing_*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# System files
+.claude/
+
+# PyInstaller build files
+*.spec
+
+# Executable files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Compression files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+
+# Windows batch files
+*.bat
+*.cmd
+
+# Shell scripts
+*.sh
+
+#飞牛OS版本目录
+文件处理工具_飞牛OS版/
+
+# 7z和ffmpeg工具目录（如果包含在tools中）
+tools/7z/
+tools/ffmpeg/bin/
