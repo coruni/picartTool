@@ -20,6 +20,12 @@ class FileNameCleaner:
 
         # 1. 移除开头的序号（如"40_咬一口兔娘_"、"01 - "、"123-文件名"等）
         filename = re.sub(r'^\d+[_\s-]+', '', filename)
+        
+        # 1.1 移除"No."开头的序号（如"No.06 - [XINGYAN星颜社] Vol.380 时安安"）
+        filename = re.sub(r'^No\.\d+[_\s-]+', '', filename, flags=re.IGNORECASE)
+        
+        # 1.2 移除"No_"开头的序号（如"No_06_文件名"）
+        filename = re.sub(r'^No_\d+[_\s-]+', '', filename, flags=re.IGNORECASE)
 
         # 2. 删除#标记内容（从开头到结尾的#之间的所有内容）
         if filename.startswith('#') and '#' in filename[1:]:
