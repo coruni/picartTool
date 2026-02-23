@@ -123,18 +123,32 @@ class FileProcessor:
             self.update_status("正在压缩图片...")
             self.image_processor.compress_images(processed_dir)
 
-            # 步骤3: 上传文件
-            self.update_status("正在上传文件...")
-            uploaded_urls = self.api_handler.upload_files(processed_dir)
-            if not uploaded_urls:
-                self.logger.error("上传失败")
-                return False
+            # 根据配置决定是否上传
+            if self.config.enable_upload:
+                # 步骤3: 上传文件
+                self.update_status("正在上传文件...")
+                uploaded_urls = self.api_handler.upload_files(processed_dir)
+                if not uploaded_urls:
+                    self.logger.error("上传失败")
+                    return False
 
-            # 步骤4: 提交文章
-            self.update_status("正在提交文章...")
-            if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
-                self.logger.error("文章提交失败")
-                return False
+                # 步骤4: 提交文章
+                self.update_status("正在提交文章...")
+                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
+                    self.logger.error("文章提交失败")
+                    return False
+            else:
+                self.update_status("已跳过上传（上传功能已禁用）")
+                self.logger.info("上传功能已禁用，跳过上传步骤")
+
+            # 根据配置决定是否删除压缩后的图片
+            if self.config.delete_compressed_images:
+                self.update_status("正在清理压缩后的图片...")
+                self._cleanup_compressed_images(processed_dir)
+            else:
+                # 将压缩后的图片移动到输出目录
+                self.update_status("正在保存压缩后的图片...")
+                self._save_compressed_images(processed_dir, clean_name)
 
             self.update_status(f"文件夹处理成功: {os.path.basename(folder_path)}")
             return True
@@ -202,18 +216,32 @@ class FileProcessor:
             self.update_status("正在压缩图片...")
             self.image_processor.compress_images(processed_dir)
 
-            # 步骤3: 上传文件
-            self.update_status("正在上传文件...")
-            uploaded_urls = self.api_handler.upload_files(processed_dir)
-            if not uploaded_urls:
-                self.logger.error("上传失败")
-                return False
+            # 根据配置决定是否上传
+            if self.config.enable_upload:
+                # 步骤3: 上传文件
+                self.update_status("正在上传文件...")
+                uploaded_urls = self.api_handler.upload_files(processed_dir)
+                if not uploaded_urls:
+                    self.logger.error("上传失败")
+                    return False
 
-            # 步骤4: 提交文章
-            self.update_status("正在提交文章...")
-            if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
-                self.logger.error("文章提交失败")
-                return False
+                # 步骤4: 提交文章
+                self.update_status("正在提交文章...")
+                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
+                    self.logger.error("文章提交失败")
+                    return False
+            else:
+                self.update_status("已跳过上传（上传功能已禁用）")
+                self.logger.info("上传功能已禁用，跳过上传步骤")
+
+            # 根据配置决定是否删除压缩后的图片
+            if self.config.delete_compressed_images:
+                self.update_status("正在清理压缩后的图片...")
+                self._cleanup_compressed_images(processed_dir)
+            else:
+                # 将压缩后的图片移动到输出目录
+                self.update_status("正在保存压缩后的图片...")
+                self._save_compressed_images(processed_dir, clean_name)
 
             # 根据配置决定是否删除原始文件
             if self.config.delete_source_files:
@@ -595,6 +623,54 @@ class FileProcessor:
                 f.write(f"临时目录，可安全删除\n创建时间: {time.ctime()}\n")
         except Exception:
             pass
+
+    def _cleanup_compressed_images(self, directory: str):
+        """清理压缩后的图片"""
+        try:
+            image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff'}
+            deleted_count = 0
+            
+            for root, dirs, files in os.walk(directory):
+                for file in files:
+                    if Path(file).suffix.lower() in image_extensions:
+                        file_path = os.path.join(root, file)
+                        try:
+                            os.remove(file_path)
+                            deleted_count += 1
+                        except Exception as e:
+                            self.logger.warning(f"删除压缩图片失败: {file}, 错误: {e}")
+            
+            if deleted_count > 0:
+                self.logger.info(f"已删除 {deleted_count} 张压缩后的图片")
+        except Exception as e:
+            self.logger.error(f"清理压缩图片时出错: {e}")
+
+    def _save_compressed_images(self, source_dir: str, base_name: str):
+        """保存压缩后的图片到输出目录"""
+        try:
+            # 创建压缩图片保存目录
+            compressed_images_dir = os.path.join(self.config.output_dir, f"{base_name}_compressed")
+            os.makedirs(compressed_images_dir, exist_ok=True)
+            
+            image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff'}
+            saved_count = 0
+            
+            for root, dirs, files in os.walk(source_dir):
+                for file in files:
+                    if Path(file).suffix.lower() in image_extensions:
+                        src_path = os.path.join(root, file)
+                        dst_path = os.path.join(compressed_images_dir, file)
+                        try:
+                            shutil.copy2(src_path, dst_path)
+                            saved_count += 1
+                        except Exception as e:
+                            self.logger.warning(f"保存压缩图片失败: {file}, 错误: {e}")
+            
+            if saved_count > 0:
+                self.logger.info(f"已保存 {saved_count} 张压缩后的图片到: {compressed_images_dir}")
+                self.update_status(f"压缩图片已保存到: {os.path.basename(compressed_images_dir)}")
+        except Exception as e:
+            self.logger.error(f"保存压缩图片时出错: {e}")
 
     def validate_file(self, file_path: str) -> bool:
         """验证文件是否可以处理"""

@@ -40,6 +40,8 @@
   "max_retries": 3,
   "extraction_timeout": 60,
   "delete_source_files": false,
+  "delete_compressed_images": true,
+  "enable_upload": true,
   "api_timeout": 120,
   "cleanup_retention_days": 7
 }
