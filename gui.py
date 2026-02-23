@@ -173,6 +173,14 @@ class FileProcessorGUI:
 
         row += 1
 
+        # 跳过登录选项
+        self.skip_login_var = tk.BooleanVar(value=self.config.skip_login)
+        skip_login_check = ttk.Checkbutton(config_frame, text="跳过登录（不执行任何API操作）",
+                                          variable=self.skip_login_var)
+        skip_login_check.grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=5)
+
+        row += 1
+
         # 压缩配置分隔线
         ttk.Separator(config_frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=8)
         row += 1
@@ -445,6 +453,7 @@ class FileProcessorGUI:
         self.config.login_account = self.login_account_var.get()
         self.config.login_password = self.login_password_var.get()
         self.config.device_id = self.device_id_var.get()
+        self.config.skip_login = self.skip_login_var.get()
         self.config.delete_source_files = self.delete_source_var.get()
         self.config.delete_compressed_images = self.delete_compressed_images_var.get()
         self.config.enable_upload = self.enable_upload_var.get()
@@ -482,9 +491,11 @@ class FileProcessorGUI:
             self.update_status("错误：请先设置输出目录")
             return
 
-        if not self.config.login_account or not self.config.login_password:
-            self.update_status("错误：请先设置登录账号和密码")
-            return
+        # 如果没有跳过登录，则验证登录信息
+        if not self.config.skip_login:
+            if not self.config.login_account or not self.config.login_password:
+                self.update_status("错误：请先设置登录账号和密码，或勾选'跳过登录'")
+                return
 
         # 创建文件处理器
         try:
@@ -703,6 +714,31 @@ class FileProcessorGUI:
         quality_scale.configure(command=lambda v: quality_label.config(text=f"{int(float(v))}"))
         row += 1
 
+        # 图片格式
+        ttk.Label(image_frame, text="压缩格式:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        image_format_var = tk.StringVar(value=self.config.image_format)
+        format_combo = ttk.Combobox(image_frame, textvariable=image_format_var, width=38, state="readonly")
+        format_combo['values'] = ('webp', 'avif')
+        format_combo.grid(row=row, column=1, sticky=(tk.W, tk.E), pady=5)
+        
+        # 添加格式说明
+        def show_format_info(event):
+            selected = image_format_var.get()
+            if selected == 'avif':
+                format_info_label.config(text="AVIF: 更高压缩率，更小文件，但编码较慢")
+            elif selected == 'webp':
+                format_info_label.config(text="WebP: 平衡的压缩率和速度，兼容性好")
+        
+        format_combo.bind('<<ComboboxSelected>>', show_format_info)
+        row += 1
+
+        # 格式说明标签
+        format_info_text = "WebP: 平衡的压缩率和速度，兼容性好" if self.config.image_format == 'webp' else "AVIF: 更高压缩率，更小文件，但编码较慢"
+        format_info_label = ttk.Label(image_frame, text=format_info_text, 
+                                     font=("Arial", 8), foreground="gray")
+        format_info_label.grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=2)
+        row += 1
+
         ttk.Label(image_frame, text="说明: 压缩后的图片用于上传，原图保留在压缩包中", 
                  font=("Arial", 8), foreground="gray").grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=10)
         row += 1
@@ -821,6 +857,7 @@ class FileProcessorGUI:
                 self.config.max_height = max_height_var.get()
                 self.config.max_width = max_width_var.get()
                 self.config.quality = quality_var.get()
+                self.config.image_format = image_format_var.get()
 
                 # API配置
                 self.config.upload_api = upload_api_var.get()
@@ -864,6 +901,7 @@ class FileProcessorGUI:
                 max_height_var.set(default_config.max_height)
                 max_width_var.set(default_config.max_width)
                 quality_var.set(default_config.quality)
+                image_format_var.set(default_config.image_format)
 
                 # API配置
                 upload_api_var.set(default_config.upload_api)

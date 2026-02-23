@@ -38,6 +38,7 @@ class Config:
     max_height: int = 1920
     max_width: int = 1080
     quality: int = 80
+    image_format: str = "webp"  # 图片压缩格式：webp, avif
 
     # API配置
     upload_api: str = "https://api.cosfan.cc/api/v1/upload/file"
@@ -51,6 +52,7 @@ class Config:
     login_account: str = "maplene"
     login_password: str = "Sakura010422"
     device_id: str = "fixed_device_id_12345"
+    skip_login: bool = False  # 是否跳过登录（跳过后不执行任何API操作）
 
     # 系统配置
     max_retries: int = 3

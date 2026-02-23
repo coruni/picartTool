@@ -51,13 +51,17 @@ class FileProcessor:
         """处理单个文件或文件夹"""
         self.update_status(f"开始处理: {os.path.basename(file_path)}")
 
-        # 确保登录并获取分类信息
-        if not self.api_handler.ensure_login():
-            self.logger.error("登录失败，无法继续处理")
-            return False
-        
-        # 预先获取分类信息（用于后续匹配）
-        self.api_handler.fetch_categories()
+        # 检查是否跳过登录
+        if self.config.skip_login:
+            self.logger.info("已跳过登录，将不执行任何API操作")
+        else:
+            # 确保登录并获取分类信息
+            if not self.api_handler.ensure_login():
+                self.logger.error("登录失败，无法继续处理")
+                return False
+            
+            # 预先获取分类信息（用于后续匹配）
+            self.api_handler.fetch_categories()
 
         # 判断是文件夹还是压缩文件
         if os.path.isdir(file_path):
@@ -123,8 +127,11 @@ class FileProcessor:
             self.update_status("正在压缩图片...")
             self.image_processor.compress_images(processed_dir)
 
-            # 根据配置决定是否上传
-            if self.config.enable_upload:
+            # 根据配置决定是否上传（跳过登录时不上传）
+            if self.config.skip_login:
+                self.update_status("已跳过登录，不执行API操作")
+                self.logger.info("跳过登录模式，不执行上传和发布操作")
+            elif self.config.enable_upload:
                 # 步骤3: 上传文件
                 self.update_status("正在上传文件...")
                 uploaded_urls = self.api_handler.upload_files(processed_dir)
@@ -221,8 +228,11 @@ class FileProcessor:
             self.update_status("正在压缩图片...")
             self.image_processor.compress_images(processed_dir)
 
-            # 根据配置决定是否上传
-            if self.config.enable_upload:
+            # 根据配置决定是否上传（跳过登录时不上传）
+            if self.config.skip_login:
+                self.update_status("已跳过登录，不执行API操作")
+                self.logger.info("跳过登录模式，不执行上传和发布操作")
+            elif self.config.enable_upload:
                 # 步骤3: 上传文件
                 self.update_status("正在上传文件...")
                 uploaded_urls = self.api_handler.upload_files(processed_dir)
