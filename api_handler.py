@@ -247,12 +247,16 @@ class APIHandler:
         self.logger.info("未匹配到分类，使用默认分类ID 2")
         return 2
 
-    def submit_article(self, title: str, images: List[str], cover: str) -> bool:
+    def submit_article(self, title: str, images: List[str], cover: str, publish: bool = True) -> bool:
         """提交文章"""
         self.logger.info(f"准备提交文章: {title}")
 
         # 自动匹配分类
         category_id = self.find_category_by_name(title)
+
+        # 根据publish参数决定文章状态
+        article_status = 'pending' if publish else 'draft'
+        status_text = "发布" if publish else "保存为草稿"
 
         for attempt in range(self.config.max_retries):
             try:
@@ -263,7 +267,7 @@ class APIHandler:
                     'categoryId': category_id,
                     'type': 'image',
                     'requireMembership': True,
-                    'status': 'pending'
+                    'status': article_status
                 }
 
                 response = self.session.post(
@@ -280,35 +284,35 @@ class APIHandler:
 
                     # 成功条件：API code为成功值 或者 success为true
                     if api_code in [0, 200, 201] or api_success:
-                        self.logger.info(f"文章提交成功: {title}")
+                        self.logger.info(f"文章{status_text}成功: {title}")
                         # 记录文章ID（如果有）
                         article_data = data.get('data', {}).get('data', {})
                         article_id = article_data.get('id')
                         if article_id:
-                            self.logger.info(f"文章ID: {article_id}")
+                            self.logger.info(f"文章ID: {article_id}, 状态: {article_status}")
                         return True
                     else:
-                        self.logger.warning(f"文章提交失败 (第 {attempt + 1} 次): API返回code={api_code}, success={api_success}")
+                        self.logger.warning(f"文章{status_text}失败 (第 {attempt + 1} 次): API返回code={api_code}, success={api_success}")
                 elif response.status_code in [401, 403]:
                     # 认证失败，尝试重新登录
                     if self._handle_auth_error(response.status_code):
                         # 重新登录成功，重试提交
                         continue
                     else:
-                        self.logger.error(f"重新登录失败，文章提交失败")
+                        self.logger.error(f"重新登录失败，文章{status_text}失败")
                         return False
                 else:
-                    self.logger.warning(f"文章提交失败 (第 {attempt + 1} 次): HTTP状态码 {response.status_code}")
+                    self.logger.warning(f"文章{status_text}失败 (第 {attempt + 1} 次): HTTP状态码 {response.status_code}")
 
                 # 只有在真正失败时才记录完整响应
                 self.logger.debug(f"完整响应: {response.text}")
             except Exception as e:
-                self.logger.warning(f"文章提交请求失败 (第 {attempt + 1} 次): {e}")
+                self.logger.warning(f"文章{status_text}请求失败 (第 {attempt + 1} 次): {e}")
 
             if attempt < self.config.max_retries - 1:
                 time.sleep((attempt + 1) * 5)
 
-        self.logger.error("文章提交失败，已达到最大重试次数")
+        self.logger.error(f"文章{status_text}失败，已达到最大重试次数")
         return False
 
     def _natural_sort_key(self, text: str) -> List:

@@ -60,6 +60,7 @@ class Config:
     delete_source_files: bool = False  # 是否在压缩完成后删除源文件
     delete_compressed_images: bool = True  # 是否删除压缩后的图片
     enable_upload: bool = True  # 是否启用上传功能
+    enable_publish: bool = True  # 是否发布文章（设为False则保存为草稿）
     api_timeout: int = 120
     cleanup_retention_days: int = 7
 

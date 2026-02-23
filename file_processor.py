@@ -133,9 +133,10 @@ class FileProcessor:
                     return False
 
                 # 步骤4: 提交文章
-                self.update_status("正在提交文章...")
-                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
-                    self.logger.error("文章提交失败")
+                status_text = "发布" if self.config.enable_publish else "保存草稿"
+                self.update_status(f"正在{status_text}文章...")
+                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0], self.config.enable_publish):
+                    self.logger.error(f"文章{status_text}失败")
                     return False
             else:
                 self.update_status("已跳过上传（上传功能已禁用）")
@@ -226,9 +227,10 @@ class FileProcessor:
                     return False
 
                 # 步骤4: 提交文章
-                self.update_status("正在提交文章...")
-                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0]):
-                    self.logger.error("文章提交失败")
+                status_text = "发布" if self.config.enable_publish else "保存草稿"
+                self.update_status(f"正在{status_text}文章...")
+                if not self.api_handler.submit_article(formatted_title, uploaded_urls, uploaded_urls[0], self.config.enable_publish):
+                    self.logger.error(f"文章{status_text}失败")
                     return False
             else:
                 self.update_status("已跳过上传（上传功能已禁用）")

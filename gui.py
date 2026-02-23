@@ -255,6 +255,14 @@ class FileProcessorGUI:
 
         row += 1
 
+        # 发布文章选项
+        self.enable_publish_var = tk.BooleanVar(value=self.config.enable_publish)
+        enable_publish_check = ttk.Checkbutton(config_frame, text="发布文章（取消则保存为草稿）",
+                                               variable=self.enable_publish_var)
+        enable_publish_check.grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=2)
+
+        row += 1
+
         # 工具配置（紧凑显示）
         tools_frame = ttk.Frame(config_frame)
         tools_frame.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
@@ -440,6 +448,7 @@ class FileProcessorGUI:
         self.config.delete_source_files = self.delete_source_var.get()
         self.config.delete_compressed_images = self.delete_compressed_images_var.get()
         self.config.enable_upload = self.enable_upload_var.get()
+        self.config.enable_publish = self.enable_publish_var.get()
 
         # 压缩配置
         self.config.zip_format = self.zip_format_var.get()
@@ -780,6 +789,12 @@ class FileProcessorGUI:
                        variable=enable_upload_var).grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=5)
         row += 1
 
+        # 发布文章选项
+        enable_publish_var = tk.BooleanVar(value=self.config.enable_publish)
+        ttk.Checkbutton(system_frame, text="发布文章（取消则保存为草稿）",
+                       variable=enable_publish_var).grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=5)
+        row += 1
+
         ttk.Label(system_frame, text="说明: 不删除压缩图片时，会保存到输出目录的_compressed文件夹", 
                  font=("Arial", 8), foreground="gray").grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=5)
         row += 1
@@ -821,6 +836,7 @@ class FileProcessorGUI:
                 self.config.cleanup_retention_days = cleanup_days_var.get()
                 self.config.delete_compressed_images = delete_compressed_images_var.get()
                 self.config.enable_upload = enable_upload_var.get()
+                self.config.enable_publish = enable_publish_var.get()
 
                 # 保存配置
                 self.config_manager.config = self.config
@@ -863,6 +879,7 @@ class FileProcessorGUI:
                 cleanup_days_var.set(default_config.cleanup_retention_days)
                 delete_compressed_images_var.set(default_config.delete_compressed_images)
                 enable_upload_var.set(default_config.enable_upload)
+                enable_publish_var.set(default_config.enable_publish)
 
         ttk.Button(button_frame, text="保存", command=save_advanced_config).pack(side=tk.RIGHT, padx=5)
         ttk.Button(button_frame, text="取消", command=config_window.destroy).pack(side=tk.RIGHT, padx=5)
