@@ -257,7 +257,7 @@ class FileProcessorGUI:
 
         # 发布文章选项
         self.enable_publish_var = tk.BooleanVar(value=self.config.enable_publish)
-        enable_publish_check = ttk.Checkbutton(config_frame, text="发布文章（取消则保存为草稿）",
+        enable_publish_check = ttk.Checkbutton(config_frame, text="发布文章（取消则只上传不发布）",
                                                variable=self.enable_publish_var)
         enable_publish_check.grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=2)
 
@@ -791,7 +791,7 @@ class FileProcessorGUI:
 
         # 发布文章选项
         enable_publish_var = tk.BooleanVar(value=self.config.enable_publish)
-        ttk.Checkbutton(system_frame, text="发布文章（取消则保存为草稿）",
+        ttk.Checkbutton(system_frame, text="发布文章（取消则只上传不发布）",
                        variable=enable_publish_var).grid(row=row, column=0, columnspan=2, sticky=tk.W, pady=5)
         row += 1
 
