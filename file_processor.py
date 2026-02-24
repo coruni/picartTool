@@ -108,7 +108,13 @@ class FileProcessor:
             # 步骤1: 创建最终压缩包
             self.update_status("正在创建最终压缩包...")
             safe_title = self._make_safe_filename(formatted_title)
-            zip_extension = f".{self.config.zip_format}"
+            
+            # 根据格式生成正确的文件扩展名
+            if self.config.zip_format.lower() == 'zst':
+                zip_extension = ".7z.zst"  # zst格式使用双扩展名
+            else:
+                zip_extension = f".{self.config.zip_format}"
+            
             zip_name = os.path.join(self.config.output_dir, f"{safe_title}{zip_extension}")
             os.makedirs(self.config.output_dir, exist_ok=True)
 
@@ -209,7 +215,13 @@ class FileProcessor:
             # 步骤1: 创建最终压缩包（按process.sh顺序，打包在压缩图片之前）
             self.update_status("正在创建最终压缩包...")
             safe_title = self._make_safe_filename(formatted_title)
-            zip_extension = f".{self.config.zip_format}"
+            
+            # 根据格式生成正确的文件扩展名
+            if self.config.zip_format.lower() == 'zst':
+                zip_extension = ".7z.zst"  # zst格式使用双扩展名
+            else:
+                zip_extension = f".{self.config.zip_format}"
+            
             zip_name = os.path.join(self.config.output_dir, f"{safe_title}{zip_extension}")
             os.makedirs(self.config.output_dir, exist_ok=True)
 
@@ -672,7 +684,8 @@ class FileProcessor:
             compressed_images_dir = os.path.join(self.config.output_dir, f"{base_name}_compressed")
             os.makedirs(compressed_images_dir, exist_ok=True)
             
-            image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff'}
+            # 包含所有可能的压缩格式
+            image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff', '.avif'}
             saved_count = 0
             
             for root, dirs, files in os.walk(source_dir):
@@ -683,12 +696,15 @@ class FileProcessor:
                         try:
                             shutil.copy2(src_path, dst_path)
                             saved_count += 1
+                            self.logger.debug(f"已保存压缩图片: {file}")
                         except Exception as e:
                             self.logger.warning(f"保存压缩图片失败: {file}, 错误: {e}")
             
             if saved_count > 0:
                 self.logger.info(f"已保存 {saved_count} 张压缩后的图片到: {compressed_images_dir}")
                 self.update_status(f"压缩图片已保存到: {os.path.basename(compressed_images_dir)}")
+            else:
+                self.logger.warning(f"没有找到压缩图片可保存（目录: {source_dir}）")
         except Exception as e:
             self.logger.error(f"保存压缩图片时出错: {e}")
 
