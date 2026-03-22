@@ -1,0 +1,17 @@
+{
+  "output_dir": "C:\\FileProcessor\\Output",
+  "image_prefix": "cosfan.cc_",
+  "zip_password": "cosfan.cc",
+  "zip_format": "7z",
+  "zip_compression_level": 9,
+  "zip_solid_mode": true,
+  "zip_dictionary_size": "32m",
+  "zstd_compression_level": 19,
+  "zstd_long_distance_mode": true,
+  "zstd_ldm_distance": 28,
+  "zstd_strategy": "default",
+  "zstd_window_log": 27,
+  "access_token": "",
+  "login_account": "your_account",
+  "login_password": "your_password"
+}
